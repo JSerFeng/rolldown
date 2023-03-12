@@ -16,7 +16,7 @@ impl Bundler {
     Self::with_plugins(input_opts, vec![])
   }
 
-  pub fn with_plugins(input_opts: InputOptions, mut plugins: Vec<Box<dyn BuildPlugin>>) -> Self {
+  pub fn with_plugins(input_opts: InputOptions, plugins: Vec<Box<dyn BuildPlugin>>) -> Self {
     rolldown_tracing::enable_tracing_on_demand();
     let cwd = input_opts.cwd.clone();
 

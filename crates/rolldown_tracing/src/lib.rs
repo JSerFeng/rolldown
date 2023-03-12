@@ -16,7 +16,6 @@ pub fn enable_tracing_on_demand() -> Option<FlushGuard> {
           tracing_subscriber::filter::Targets::new().with_targets(vec![("rolldown", Level::TRACE)]),
         )
         .init();
-      println!("with chrome");
       Some(guard)
     } else {
       tracing_subscriber::registry()

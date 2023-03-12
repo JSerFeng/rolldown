@@ -2,7 +2,7 @@ name: CI
 
 env:
   RUST_BACKTRACE: 1
-  RUST_TOOLCHAIN: nightly-2022-09-23
+  RUST_TOOLCHAIN: nightly-2023-02-21
 
 on:
   push:
