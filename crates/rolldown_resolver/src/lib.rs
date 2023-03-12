@@ -58,9 +58,7 @@ impl Resolver {
             importer.as_path().to_path_buf(),
           ))
         } else {
-          Err(rolldown_error::Error::unresolved_entry(
-            specifier.as_path().to_path_buf(),
-          ))
+          Err(rolldown_error::Error::unresolved_entry(specifier.as_path()))
         }
       }
     }

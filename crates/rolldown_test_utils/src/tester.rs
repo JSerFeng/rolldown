@@ -65,7 +65,6 @@ impl Tester {
             .tsconfig
             .use_define_for_class_fields,
         }),
-        ..Default::default()
       },
       shim_missing_exports: self.config.input.shim_missing_exports,
     }

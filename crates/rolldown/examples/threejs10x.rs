@@ -8,13 +8,12 @@ use sugar_path::SugarPathBuf;
 async fn main() {
   let _guard = enable_tracing_on_demand();
   let project_root = std::env::var_os("CARGO_MANIFEST_DIR")
-    .map(|s| PathBuf::from(s))
+    .map(PathBuf::from)
     .unwrap_or_else(|| {
-      let project_root = std::env::current_dir()
+      std::env::current_dir()
         .unwrap()
         .join("./crates/rolldown")
-        .into_normalize();
-      project_root
+        .into_normalize()
     });
 
   let mut bundler = Bundler::new(InputOptions {
