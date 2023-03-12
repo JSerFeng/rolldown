@@ -142,13 +142,13 @@ impl ModuleTask {
 
   async fn run_inner(self) -> BuildResult<TaskResult> {
     let loaded = self.plugin_driver.read().await.load(&self.id).await?;
-
+    // load hook
     let (code, loader) = if loaded.is_some() {
       loaded.map(|l| (l.code, l.loader)).unwrap()
     } else {
       let code = tokio::fs::read_to_string(self.id.as_ref())
         .await
-        .map_err(|e| BuildError::io_error(e))
+        .map_err(BuildError::io_error)
         .map_err(|e| e.context(format!("Read file: {}", self.id.as_ref())))?;
 
       (code, None)

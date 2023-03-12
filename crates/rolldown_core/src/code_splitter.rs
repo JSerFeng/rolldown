@@ -162,7 +162,7 @@ impl<'me> CodeSplitter<'me> {
 
         let module = self.graph.module_by_id.get(&module_id).unwrap();
 
-        stack.extend(module.dependencies().into_iter().cloned().rev());
+        stack.extend(module.dependencies().iter().cloned().rev());
       }
     }
   }

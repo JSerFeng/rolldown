@@ -110,7 +110,7 @@ impl Graph {
     let mut next_exec_order = 0;
 
     while let Some((action, id)) = stack.pop() {
-      let module = self.module_by_id.get(&id).unwrap();
+      let module = self.module_by_id.get(id).unwrap();
       match action {
         Action::Enter => {
           if !entered_ids.contains(id) {
@@ -126,7 +126,7 @@ impl Graph {
             dynamic_entries.extend(
               module
                 .dynamic_dependencies()
-                .into_iter()
+                .iter()
                 .map(|id| (Action::Enter, id)),
             )
           }
@@ -146,7 +146,7 @@ impl Graph {
     stack.extend(dynamic_entries);
 
     while let Some((action, id)) = stack.pop() {
-      let module = self.module_by_id.get(&id).unwrap();
+      let module = self.module_by_id.get(id).unwrap();
       match action {
         Action::Enter => {
           if !entered_ids.contains(id) {
@@ -268,13 +268,13 @@ impl Graph {
                   if spec.imported == js_word!("*") {
                     importee.mark_namespace_id_referenced();
                   }
-                  if self.input_options.shim_missing_exports {
-                    if shim_missing_export_if_needed(importee, &spec.imported) {
-                      (self.input_options.on_warn)(BuildError::shimmed_export(
-                        spec.imported.to_string(),
-                        importee_id.as_path().to_path_buf(),
-                      ));
-                    }
+                  if self.input_options.shim_missing_exports
+                    && shim_missing_export_if_needed(importee, &spec.imported)
+                  {
+                    (self.input_options.on_warn)(BuildError::shimmed_export(
+                      spec.imported.to_string(),
+                      importee_id.as_path().to_path_buf(),
+                    ));
                   }
                   if let Some(original_spec) = importee.find_exported(&spec.imported) {
                     importer.add_to_linked_exports(spec.exported_as, original_spec.clone());
@@ -501,13 +501,13 @@ impl Graph {
                 }
                 importee.suggest_name(&imported_spec.imported, imported_spec.imported_as.name());
 
-                if self.input_options.shim_missing_exports {
-                  if shim_missing_export_if_needed(importee, &imported_spec.imported) {
-                    (self.input_options.on_warn)(BuildError::shimmed_export(
-                      imported_spec.imported.to_string(),
-                      importee_id.as_path().to_path_buf(),
-                    ));
-                  }
+                if self.input_options.shim_missing_exports
+                  && shim_missing_export_if_needed(importee, &imported_spec.imported)
+                {
+                  (self.input_options.on_warn)(BuildError::shimmed_export(
+                    imported_spec.imported.to_string(),
+                    importee_id.as_path().to_path_buf(),
+                  ));
                 }
                 if let Some(exported_spec) =
                   importee.find_exported(&imported_spec.imported).cloned()
@@ -553,13 +553,13 @@ impl Graph {
                     importee.mark_namespace_id_referenced();
                   }
                   importee.suggest_name(&imported_spec.imported, imported_spec.imported_as.name());
-                  if self.input_options.shim_missing_exports {
-                    if shim_missing_export_if_needed(importee, &imported_spec.imported) {
-                      (self.input_options.on_warn)(BuildError::shimmed_export(
-                        imported_spec.imported.to_string(),
-                        importee_id.as_path().to_path_buf(),
-                      ));
-                    }
+                  if self.input_options.shim_missing_exports
+                    && shim_missing_export_if_needed(importee, &imported_spec.imported)
+                  {
+                    (self.input_options.on_warn)(BuildError::shimmed_export(
+                      imported_spec.imported.to_string(),
+                      importee_id.as_path().to_path_buf(),
+                    ));
                   }
                   if let Some(exported_spec) =
                     importee.find_exported(&imported_spec.imported).cloned()

@@ -91,10 +91,7 @@ impl Error {
 
   pub fn circular_dependency(circular_path: Vec<String>) -> Self {
     Self::with_kind(ErrorKind::CircularDependency(
-      circular_path
-        .into_iter()
-        .map(|p| PathBuf::from(p))
-        .collect(),
+      circular_path.into_iter().map(PathBuf::from).collect(),
     ))
   }
 

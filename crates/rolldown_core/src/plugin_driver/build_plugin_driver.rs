@@ -25,7 +25,7 @@ impl BuildPluginDriver {
   }
 
   pub(crate) async fn load(&self, id: &ModuleId) -> LoadReturn {
-    let mut load_args = LoadArgs { id: &id };
+    let mut load_args = LoadArgs { id };
     for plugin in &self.plugins {
       let output = plugin.load(&mut Context::new(), &mut load_args).await?;
       if output.is_some() {
