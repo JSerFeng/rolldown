@@ -136,7 +136,7 @@ impl Error {
     })
   }
 
-  // --- rolldown special
+  // --- rolldown specific
 
   pub fn parse_js_failed(
     fm: Arc<SourceFile>,
