@@ -1,1 +1,9 @@
-{}
+{
+    "input": {
+        "builtins": {
+            "tsconfig": {
+                "useDefineForClassFields": true
+            }
+        }
+    }
+}

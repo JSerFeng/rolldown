@@ -20,21 +20,6 @@ impl Bundler {
     rolldown_tracing::enable_tracing_on_demand();
     let cwd = input_opts.cwd.clone();
 
-    let mut builtin_post_plugins = vec![];
-
-    if let Some(node_resolve) = input_opts.builtins.node_resolve {
-      builtin_post_plugins.push(rolldown_plugin_node_resolve::NodeResolvePlugin::new_boxed(
-        rolldown_plugin_node_resolve::ResolverOptions {
-          extensions: node_resolve.extensions,
-          symlinks: !input_opts.preserve_symlinks,
-          ..Default::default()
-        },
-        cwd.clone(),
-      ))
-    }
-
-    plugins.extend(builtin_post_plugins);
-
     let bundler = BundlerCore::with_plugins(
       rolldown_core::BuildInputOptions {
         input: input_opts.input,
@@ -43,6 +28,7 @@ impl Bundler {
         is_external: input_opts.is_external,
         on_warn: input_opts.on_warn,
         shim_missing_exports: input_opts.shim_missing_exports,
+        preserve_symlinks: input_opts.preserve_symlinks,
         builtins: rolldown_core::BuiltinsOptions {
           tsconfig: input_opts.builtins.tsconfig.unwrap_or_default(),
           ..Default::default()

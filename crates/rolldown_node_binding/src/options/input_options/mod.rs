@@ -78,12 +78,6 @@ pub fn resolve_input_options(
       is_external,
       preserve_symlinks: opts.preserve_symlinks,
       builtins: rolldown::BuiltinsOptions {
-        node_resolve: opts
-          .builtins
-          .node_resolve
-          .map(|opts| rolldown::NodeResolveOptions {
-            extensions: opts.extensions,
-          }),
         tsconfig: opts.builtins.tsconfig.map(|opts| rolldown::TsConfig {
           use_define_for_class_fields: opts.use_define_for_class_fields,
         }),

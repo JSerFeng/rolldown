@@ -5,13 +5,22 @@ use futures::future::join_all;
 use rolldown_common::{Loader, ModuleId};
 use rolldown_error::Errors;
 use rolldown_resolver::Resolver;
-use rolldown_swc_visitors::ScanResult;
+use rolldown_swc_visitors::{clean_ast, ScanResult};
 use rustc_hash::FxHashMap;
 use sugar_path::AsPath;
-use swc_core::common::{Mark, SyntaxContext, GLOBALS};
+use swc_core::common::pass::Optional;
+use swc_core::common::{chain, Mark, SyntaxContext, GLOBALS};
 use swc_core::ecma::ast;
 use swc_core::ecma::atoms::JsWord;
 use swc_core::ecma::parser::{EsConfig, Syntax, TsConfig};
+use swc_core::ecma::transforms::base::fixer::fixer;
+use swc_core::ecma::transforms::base::helpers::{inject_helpers, HELPERS};
+use swc_core::ecma::transforms::base::hygiene::hygiene;
+use swc_core::ecma::transforms::base::resolver;
+use swc_core::ecma::transforms::proposal::decorators;
+use swc_core::ecma::transforms::react;
+use swc_core::ecma::transforms::typescript;
+use swc_core::ecma::visit::FoldWith;
 use swc_node_comments::SwcComments;
 use tracing::instrument;
 
@@ -205,6 +214,8 @@ fn parse_to_js_ast(
     Loader::Js | Loader::Jsx | Loader::Ts | Loader::Tsx => {
       let is_jsx_or_tsx = matches!(loader, Loader::Jsx | Loader::Tsx);
       let is_ts_or_tsx = matches!(loader, Loader::Ts | Loader::Tsx);
+      let is_tsx = matches!(loader, Loader::Tsx);
+      let is_ts = matches!(loader, Loader::Ts);
       let syntax = if is_ts_or_tsx {
         Syntax::Typescript(TsConfig {
           tsx: is_jsx_or_tsx,
@@ -219,21 +230,90 @@ fn parse_to_js_ast(
       };
       let comments = SwcComments::default();
       let fm = COMPILER.create_source_file(PathBuf::from(id.as_ref().to_string()), source);
-      let mut ast = COMPILER
+      let ast = COMPILER
         .parse_with_comments(fm.clone(), syntax, Some(&comments))
         .map_err(|e| BuildError::parse_js_failed(fm, e).context(format!("{loader:?}")))?;
-      if is_ts_or_tsx {
-        rolldown_swc_visitors::ts_to_js(
-          &mut ast,
-          rolldown_swc_visitors::TsConfig {
-            use_define_for_class_fields: input_options
-              .builtins
-              .tsconfig
-              .use_define_for_class_fields,
-            ..Default::default()
+
+      let need_resolve = is_ts_or_tsx;
+      let need_inject_helpers = is_ts_or_tsx;
+
+      // It's ok to use a new GLOBALS here, since the SyntaxContext information won't be used in bundler.
+      // Bundler will resolve SyntaxContext for its own usage.
+      let ast = GLOBALS.set(&Default::default(), || {
+        let unresolved_mark = Mark::new();
+        let top_level_mark = Mark::new();
+        let mut folders = chain!(
+          Optional {
+            enabled: is_ts_or_tsx,
+            visitor: decorators::decorators(decorators::Config {
+              use_define_for_class_fields: input_options
+                .builtins
+                .tsconfig
+                .use_define_for_class_fields,
+              ..Default::default()
+            }),
           },
+          Optional {
+            enabled: need_resolve,
+            visitor: resolver(unresolved_mark, top_level_mark, is_ts_or_tsx),
+          },
+          Optional {
+            enabled: is_ts,
+            visitor: typescript::strip_with_config(
+              typescript::Config {
+                ..Default::default()
+              },
+              top_level_mark
+            ),
+          },
+          Optional {
+            enabled: is_tsx,
+            visitor: typescript::strip_with_jsx(
+              COMPILER.cm.clone(),
+              typescript::Config {
+                ..Default::default()
+              },
+              &comments,
+              top_level_mark
+            ),
+          },
+          Optional {
+            enabled: is_jsx_or_tsx,
+            visitor: react::react(
+              COMPILER.cm.clone(),
+              Some(&comments),
+              react::Options {
+                ..Default::default()
+              },
+              top_level_mark
+            )
+          },
+          Optional {
+            enabled: is_ts_or_tsx,
+            visitor: // Fix up any identifiers with the same name, but different contexts
+            // Notice the resolved SyntaxContext is cleared by hygiene,
+            // So we don't need to clear again.
+            hygiene(),
+          },
+          Optional {
+            enabled: is_ts_or_tsx,
+            // Ensure that we have enough parenthesis.
+            visitor: fixer(None),
+          },
+          Optional {
+            enabled: need_inject_helpers,
+            // Ensure that we have enough parenthesis.
+            visitor: inject_helpers(unresolved_mark),
+          },
+          Optional {
+            enabled: need_resolve,
+            visitor: clean_ast()
+          }
         );
-      }
+
+        HELPERS.set(&Default::default(), || ast.fold_with(&mut folders))
+      });
+
       Ok((ast, comments))
     }
     Loader::Json => unimplemented!(),

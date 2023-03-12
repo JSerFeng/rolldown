@@ -48,6 +48,11 @@ pub enum ErrorKind {
     export_name: StaticStr,
   },
 
+  UnresolvedImport {
+    specifier: StaticStr,
+    importer: PathBuf,
+  },
+
   // --- Rolldown specific
   ParseJsFailed {
     source_file: Arc<SourceFile>,
@@ -107,6 +112,7 @@ impl Display for ErrorKind {
       }
       ErrorKind::ShimmedExport { binding, exporter } => write!(f, r#"Missing export "{binding}" has been shimmed in module "{}"."#, exporter.may_display_relative()),
       ErrorKind::CircularReexport { export_name, exporter } => write!(f, r#""{export_name}" cannot be exported from "{}" as it is a reexport that references itself."#, exporter.may_display_relative()),
+      ErrorKind::UnresolvedImport { specifier, importer } => write!(f, r#"Could not resolve "{specifier}" from "{}""#, importer.may_display_relative()),
       // Rolldown specific
       ErrorKind::Panic { source } => source.fmt(f),
       ErrorKind::Napi { status, reason } => write!(f, "Napi error: {} {}", status, reason),
@@ -137,6 +143,7 @@ impl ErrorKind {
       ErrorKind::IncompatibleExportOptionValue { .. } => error_code::INVALID_EXPORT_OPTION,
       ErrorKind::ShimmedExport { .. } => error_code::SHIMMED_EXPORT,
       ErrorKind::CircularReexport { .. } => error_code::CIRCULAR_REEXPORT,
+      ErrorKind::UnresolvedImport { .. } => error_code::UNRESOLVED_IMPORT,
       // Rolldown specific
       ErrorKind::Panic { .. } => error_code::PANIC,
       ErrorKind::IoError(_) => error_code::IO_ERROR,

@@ -1,15 +1,31 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-use sugar_path::{AsPath, SugarPathBuf};
+use nodejs_resolver::{Options, Resolver as EnhancedResolver};
+use sugar_path::AsPath;
 
 #[derive(Debug)]
 pub struct Resolver {
   cwd: PathBuf,
+  inner: EnhancedResolver,
 }
 
 impl Resolver {
-  pub fn with_cwd(cwd: PathBuf) -> Self {
-    Self { cwd }
+  pub fn with_cwd(cwd: PathBuf, preserve_symlinks: bool) -> Self {
+    Self {
+      cwd,
+      inner: EnhancedResolver::new(Options {
+        symlinks: !preserve_symlinks,
+        extensions: vec![
+          ".js".to_string(),
+          ".jsx".to_string(),
+          ".ts".to_string(),
+          ".tsx".to_string(),
+        ],
+        // TODO(hyf0): Should we set this as default?
+        prefer_relative: true,
+        ..Default::default()
+      }),
+    }
   }
 
   pub fn cwd(&self) -> &PathBuf {
@@ -19,35 +35,34 @@ impl Resolver {
 
 impl Default for Resolver {
   fn default() -> Self {
-    Self {
-      cwd: std::env::current_dir().unwrap(),
-    }
+    Self::with_cwd(std::env::current_dir().unwrap(), true)
   }
 }
 
 impl Resolver {
   pub fn resolve(&self, importer: Option<&str>, specifier: &str) -> rolldown_error::Result<String> {
-    let mut path = if specifier.as_path().is_absolute() {
-      specifier.as_path().to_path_buf()
-    } else if let Some(importer) = importer {
-      importer
-        .as_path()
-        .parent()
-        .unwrap()
-        .join(specifier)
-        .into_absolutize()
-    } else {
-      self.cwd.as_path().join(specifier).into_absolutize()
-    };
+    let importer_dir = importer
+      .map(|s| Path::new(s).parent().expect("Should have a parent dir"))
+      .unwrap_or(&self.cwd);
 
-    add_js_extension(&mut path);
-    let id = path.to_string_lossy().to_string();
-    Ok(id)
-  }
-}
-
-fn add_js_extension(path: &mut std::path::PathBuf) {
-  if path.extension().is_none() {
-    path.set_extension("js");
+    let resolved = self.inner.resolve(importer_dir, specifier);
+    match resolved {
+      Ok(resolved) => match resolved {
+        nodejs_resolver::ResolveResult::Info(info) => Ok(info.path().to_string_lossy().to_string()),
+        nodejs_resolver::ResolveResult::Ignored => unreachable!(),
+      },
+      Err(_err) => {
+        if let Some(importer) = importer {
+          Err(rolldown_error::Error::unresolved_import(
+            specifier.to_string(),
+            importer.as_path().to_path_buf(),
+          ))
+        } else {
+          Err(rolldown_error::Error::unresolved_entry(
+            specifier.as_path().to_path_buf(),
+          ))
+        }
+      }
+    }
   }
 }

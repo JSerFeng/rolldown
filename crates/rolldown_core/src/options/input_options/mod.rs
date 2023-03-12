@@ -26,6 +26,7 @@ pub struct BuildInputOptions {
   #[derivative(Debug = "ignore")]
   pub on_warn: WarningHandler,
   pub shim_missing_exports: bool,
+  pub preserve_symlinks: bool,
   pub builtins: BuiltinsOptions,
 }
 
@@ -41,6 +42,7 @@ impl Default for BuildInputOptions {
       }),
       shim_missing_exports: false,
       builtins: Default::default(),
+      preserve_symlinks: true,
     }
   }
 }

@@ -129,6 +129,13 @@ impl Error {
     })
   }
 
+  pub fn unresolved_import(specifier: impl Into<StaticStr>, importer: PathBuf) -> Self {
+    Self::with_kind(ErrorKind::UnresolvedImport {
+      specifier: specifier.into(),
+      importer,
+    })
+  }
+
   // --- rolldown special
 
   pub fn parse_js_failed(

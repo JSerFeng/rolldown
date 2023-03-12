@@ -1,7 +1,7 @@
 ---
 source: crates/rolldown/tests/common/mod.rs
 expression: compiled_fx.output_friendly_to_snapshot()
-input_file: crates/rolldown/tests/esbuild/ts/ts_computed_class_field_use_define_false
+input_file: crates/rolldown/tests/esbuild/ts/type_script_decorator_scope_issue2147
 ---
 ---------- main.js ----------
 // main.ts
@@ -335,7 +335,7 @@ function _unsupportedIterableToArray(o, minLen) {
     if ("Map" === n || "Set" === n) return Array.from(n);
     if ("Arguments" === n || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
 }
-let Foo = _decorate([], function(_initialize) {
+_decorate([], function(_initialize) {
     class Foo$1 {
         static name = "Foo";
         constructor(){
@@ -346,36 +346,107 @@ let Foo = _decorate([], function(_initialize) {
         F: Foo$1,
         d: [
             {
-                kind: "field",
-                key: q,
-                value: void 0
+                kind: "method",
+                key: "method1",
+                value: function method1(
+                @dec(foo)
+                foo = 2) {}
             },
             {
+                kind: "method",
+                key: "method2",
+                value: function method2(
+                @dec(()=>foo)
+                foo = 3) {}
+            }
+        ]
+    };
+});
+_decorate([], function(_initialize) {
+    class Bar$1 {
+        static name = "Bar";
+        constructor(){
+            _initialize(this);
+        }
+    }
+    return {
+        F: Bar$1,
+        d: [
+            {
                 kind: "field",
-                key: r,
+                static: true,
+                key: "x",
                 value () {
-                    return s;
-                }
-            },
-            {
-                kind: "field",
-                decorators: [
-                    dec
-                ],
-                key: x,
-                value: void 0
-            },
-            {
-                kind: "field",
-                decorators: [
-                    dec
-                ],
-                key: y,
-                value () {
-                    return z;
+                    return _decorate([], function(_initialize) {
+                        class _class {
+                            constructor(){
+                                _initialize(this);
+                            }
+                        }
+                        return {
+                            F: _class,
+                            d: [
+                                {
+                                    kind: "field",
+                                    static: true,
+                                    key: "y",
+                                    value () {
+                                        return ()=>{
+                                            let bar = 1;
+                                            let Baz = _decorate([
+                                                dec(bar),
+                                                dec(()=>bar)
+                                            ], function(_initialize) {
+                                                class Baz {
+                                                    constructor(){
+                                                        _initialize(this);
+                                                    }
+                                                }
+                                                return {
+                                                    F: Baz,
+                                                    d: [
+                                                        {
+                                                            kind: "method",
+                                                            decorators: [
+                                                                dec(bar)
+                                                            ],
+                                                            key: "method1",
+                                                            value: function method1() {}
+                                                        },
+                                                        {
+                                                            kind: "method",
+                                                            decorators: [
+                                                                dec(()=>bar)
+                                                            ],
+                                                            key: "method2",
+                                                            value: function method2() {}
+                                                        },
+                                                        {
+                                                            kind: "method",
+                                                            key: "method3",
+                                                            value: function method3(
+                                                            @dec(()=>bar)
+                                                            bar) {}
+                                                        },
+                                                        {
+                                                            kind: "method",
+                                                            key: "method4",
+                                                            value: function method4(
+                                                            @dec(()=>bar)
+                                                            bar) {}
+                                                        }
+                                                    ]
+                                                };
+                                            });
+                                            return Baz;
+                                        };
+                                    }
+                                }
+                            ]
+                        };
+                    });
                 }
             }
         ]
     };
 });
-new Foo();

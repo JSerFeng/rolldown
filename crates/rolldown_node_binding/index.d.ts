@@ -16,15 +16,10 @@ export interface BuildPluginOption {
   transform?: (id: string, code: string) => Promise<string | null | undefined>
   resolveId?: (specifier: string, importer?: string) => Promise<string | null | ResolveIdResult>
 }
-export interface NodeResolveOptions {
-  extensions: Array<string>
-}
 export interface TsConfigOptions {
   useDefineForClassFields: boolean
 }
 export interface BuiltinsOptions {
-  /** None means disable the behaviors */
-  nodeResolve?: NodeResolveOptions
   tsconfig?: TsConfigOptions
 }
 export interface InputOptions {

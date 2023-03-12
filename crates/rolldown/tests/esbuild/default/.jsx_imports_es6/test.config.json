@@ -1,0 +1,10 @@
+{
+    "input": {
+        "builtins": {
+            "jsx": {
+                "factory": "elem",
+                "fragment": "frag"
+            }
+        }
+    }
+}

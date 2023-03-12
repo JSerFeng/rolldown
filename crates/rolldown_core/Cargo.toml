@@ -32,6 +32,7 @@ swc_core = { workspace = true, features = [
   "common",
   "common_concurrent",
   "ecma_utils",
+  "ecma_transforms_react",
 ] }
 swc_node_comments = { workspace = true }
 tokio = { workspace = true, features = ["full"] }

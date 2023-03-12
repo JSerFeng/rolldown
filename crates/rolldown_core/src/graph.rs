@@ -681,7 +681,10 @@ impl Graph {
 
   #[instrument(skip_all)]
   pub(crate) async fn generate_module_graph(&mut self) -> BuildResult<()> {
-    let resolver = Arc::new(Resolver::with_cwd(self.input_options.cwd.clone()));
+    let resolver = Arc::new(Resolver::with_cwd(
+      self.input_options.cwd.clone(),
+      self.input_options.preserve_symlinks,
+    ));
 
     ModuleLoader::new(
       self,

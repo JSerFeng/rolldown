@@ -7,13 +7,13 @@ input_file: crates/rolldown/tests/esbuild/ts/ts_enum_jsx
 // element.tsx
 var Foo;
 (Foo || (Foo = {}))["Div"] = 'div';
-console.log(<Foo.Div/>);
+console.log(React.createElement(Foo.Div, null));
 export { Foo };
 ---------- fragment.js ----------
 // fragment.tsx
 var React;
 (React || (React = {}))["Fragment"] = 'div';
-console.log(<>test</>);
+console.log(React.createElement(React.Fragment, null, "test"));
 export { React };
 ---------- nested-element.js ----------
 // nested-element.tsx
@@ -22,8 +22,8 @@ var x;
     var y;
     ((y = x$1.y || (x$1.y = {})).Foo || (y.Foo = {}))["Div"] = 'div';
 })(x || (x = {}));
-(function(x$2) {
-    x$2.y || (x$2.y = {}), console.log(<x$2.y.Foo.Div/>);
+(function(x1) {
+    x1.y || (x1.y = {}), console.log(React.createElement(x.y.Foo.Div, null));
 })(x || (x = {}));
 ---------- nested-fragment.js ----------
 // nested-fragment.tsx
@@ -33,5 +33,5 @@ var x;
     ((y = x$1.y || (x$1.y = {})).React || (y.React = {}))["Fragment"] = 'div';
 })(x || (x = {}));
 (function(x$2) {
-    x$2.y || (x$2.y = {}), console.log(<>test</>);
+    x$2.y || (x$2.y = {}), console.log(React.createElement(React.Fragment, null, "test"));
 })(x || (x = {}));

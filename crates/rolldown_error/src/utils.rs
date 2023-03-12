@@ -1,7 +1,4 @@
-use std::{
-  borrow::Cow,
-  path::{Path, PathBuf},
-};
+use std::{borrow::Cow, path::Path};
 
 use sugar_path::SugarPath;
 

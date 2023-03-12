@@ -1,6 +1,6 @@
 # Rolldown
 
-[![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![CI status](https://github.com/rolldown-rs/rolldown/actions/workflows/ci-correctness.yaml/badge.svg) [![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Fast JavaScript/TypeScript bundler in Rust with Rollup-compatible API.
 

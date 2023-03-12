@@ -1,8 +1,8 @@
-name: Correctness
+name: CI
 
 env:
   RUST_BACKTRACE: 1
-  RUST_TOOLCHAIN: nightly-2023-02-21
+  RUST_TOOLCHAIN: nightly-2022-09-23
 
 on:
   push:
@@ -12,8 +12,8 @@ on:
     types: ['opened', 'reopened', 'synchronize']
 
 jobs:
-  format:
-    name: Format check
+  node-format:
+    name: Node format
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v3
@@ -30,7 +30,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: format-check
+          key: ${{ env.GITHUB_JOB }}-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -40,9 +40,55 @@ jobs:
         run: yarn install
       - name: Check
         run: |
-          cargo fmt -- --check
           yarn format:check
-          cargo clippy --all --all-features
+
+  cargo-clippy:
+    name: Cargo clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # We explicitly do this to cache properly.
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          components: rustfmt, clippy
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: ${{ env.GITHUB_JOB }}-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}
+      # TODO: should deny warnings after stable
+      # - run: cargo clippy --all --all-targets -- -D warnings
+      - name: Cargo clippy
+        run: cargo clippy --all --all-features
+
+  cargo-fmt:
+    name: Cargo fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # We explicitly do this to cache properly.
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          components: rustfmt, clippy
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: ${{ env.GITHUB_JOB }}-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}
+      - name: Cargo fmt
+        run: cargo fmt --all -- --check
 
   cargo-test:
     name: Cargo test
@@ -63,7 +109,7 @@ jobs:
             ~/.cargo/git/db/
             .cargo-cache
             target/
-          key: cargo-test
+          key: ${{ env.GITHUB_JOB }}-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}
       - name: Build
         run: |
           cargo test --all --no-run -- --nocapture
@@ -90,7 +136,7 @@ jobs:
             ~/.cargo/git/db/
             .cargo-cache
             target/
-          key: cargo-test
+          key: ${{ env.GITHUB_JOB }}-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}
       - name: Setup node
         uses: actions/setup-node@v3
         with:

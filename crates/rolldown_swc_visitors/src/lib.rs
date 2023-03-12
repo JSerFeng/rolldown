@@ -21,8 +21,8 @@ mod to_cjs;
 pub use to_cjs::*;
 mod export_mode_shimer;
 pub use export_mode_shimer::*;
-mod ts_to_js;
-pub use ts_to_js::*;
+mod clean_ast;
+pub use clean_ast::clean_ast;
 
 struct ClearSyntaxContext;
 

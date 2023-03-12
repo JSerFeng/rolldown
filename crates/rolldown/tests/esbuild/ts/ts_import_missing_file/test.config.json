@@ -1,0 +1,6 @@
+{
+    "expectedError": {
+        "code": "UNRESOLVED_IMPORT",
+        "message": "Could not resolve \"./doesNotExist.ts\" from \"main.ts\""
+    }
+}

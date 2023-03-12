@@ -8,5 +8,6 @@ version     = "0.0.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rolldown_error = { version = "0.0.1", path = "../rolldown_error" }
-sugar_path     = { workspace = true }
+nodejs-resolver = "0.0.67"
+rolldown_error  = { version = "0.0.1", path = "../rolldown_error" }
+sugar_path      = { workspace = true }
