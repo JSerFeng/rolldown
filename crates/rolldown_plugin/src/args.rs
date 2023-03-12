@@ -1,4 +1,4 @@
-use rolldown_common::ModuleId;
+use rolldown_common::{Loader, ModuleId};
 
 #[derive(Debug, Clone)]
 pub struct ResolveArgs<'a> {
@@ -9,4 +9,9 @@ pub struct ResolveArgs<'a> {
 pub struct TransformArgs<'a> {
   pub id: &'a ModuleId,
   pub code: &'a String,
+  pub loader: &'a mut Loader,
+}
+
+pub struct LoadArgs<'a> {
+  pub id: &'a ModuleId,
 }

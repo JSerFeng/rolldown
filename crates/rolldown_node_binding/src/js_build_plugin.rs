@@ -53,7 +53,7 @@ impl BuildPlugin for JsBuildPlugin {
     &self,
     _ctx: &mut rolldown_plugin::Context,
     args: &mut rolldown_plugin::TransformArgs,
-  ) -> rolldown_plugin::TransformOutput {
+  ) -> rolldown_plugin::TransformReturn {
     if let Some(cb) = &self.transform_cb {
       let res = cb
         .call_async((args.code.to_string(), args.id.to_string()))
@@ -68,7 +68,7 @@ impl BuildPlugin for JsBuildPlugin {
     &self,
     _ctx: &mut rolldown_plugin::Context,
     args: &mut rolldown_plugin::ResolveArgs,
-  ) -> rolldown_plugin::ResolveOutput {
+  ) -> rolldown_plugin::ResolveReturn {
     if let Some(cb) = &self.resolve_id_cb {
       let cb_ret = cb
         .call_async((

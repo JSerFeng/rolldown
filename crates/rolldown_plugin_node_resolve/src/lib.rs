@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use nodejs_resolver::{ResolveResult, Resolver};
-use rolldown_plugin::{async_trait, BuildPlugin, Context, ResolveArgs, ResolveOutput, ResolvedId};
+use rolldown_plugin::{async_trait, BuildPlugin, Context, ResolveArgs, ResolveReturn, ResolvedId};
 
 #[derive(Debug)]
 pub struct NodeResolvePlugin {
@@ -24,7 +24,7 @@ impl BuildPlugin for NodeResolvePlugin {
     std::borrow::Cow::Borrowed("builtin:node-resolve")
   }
 
-  async fn resolve(&self, _ctx: &mut Context, args: &mut ResolveArgs) -> ResolveOutput {
+  async fn resolve(&self, _ctx: &mut Context, args: &mut ResolveArgs) -> ResolveReturn {
     let importer = args
       .importer
       .map(|importer| Path::new(importer.as_ref()).parent().unwrap())

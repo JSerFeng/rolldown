@@ -141,23 +141,32 @@ impl ModuleTask {
   }
 
   async fn run_inner(self) -> BuildResult<TaskResult> {
-    // load hook
-    let code = tokio::fs::read_to_string(self.id.as_ref())
-      .await
-      .map_err(|e| BuildError::io_error(e))
-      .map_err(|e| e.context(format!("Read file: {}", self.id.as_ref())))?;
+    let loaded = self.plugin_driver.read().await.load(&self.id).await?;
 
-    let loader = if self.input_options.builtins.detect_loader_by_ext {
-      extract_loader_by_path(self.id.as_path())
+    let (code, loader) = if loaded.is_some() {
+      loaded.map(|l| (l.code, l.loader)).unwrap()
     } else {
-      Loader::Js
+      let code = tokio::fs::read_to_string(self.id.as_ref())
+        .await
+        .map_err(|e| BuildError::io_error(e))
+        .map_err(|e| e.context(format!("Read file: {}", self.id.as_ref())))?;
+
+      (code, None)
     };
+
+    let mut loader = loader.unwrap_or_else(|| {
+      if self.input_options.builtins.detect_loader_by_ext {
+        extract_loader_by_path(self.id.as_path())
+      } else {
+        Loader::Js
+      }
+    });
 
     let code = self
       .plugin_driver
       .read()
       .await
-      .transform(&self.id, code)
+      .transform(&self.id, code, &mut loader)
       .await?;
 
     let (mut ast, comments) = parse_to_js_ast(&self.id, code, loader, &self.input_options)?;
